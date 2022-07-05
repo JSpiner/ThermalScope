@@ -22,10 +22,14 @@ uint16_t renderData[leptonWidth * leptonHeight];
  * CS -> 15
  * RESET -> 4
  * DC -> 2
- * MISO -> 12 // optional
- * MOSI -> 13
+ * SDI(MOSI) -> 13
  * CLK(SCK) -> 14
  * LED -> VCC
+ * SDOK(MISO) -> 12
+ * T_CLK -> SCK
+ * T_CS -> 34
+ * T_DIN -> MOSI
+ * T_DO -> MISO
  * // also need to allow USE_HSPI_PORT option in User_Setup.h
  */
 TFT_eSPI tft = TFT_eSPI();
@@ -47,6 +51,15 @@ unsigned int framesPerSecond;
 unsigned long lastRenderTime = 0;
 
 const boolean isDebug = true;
+
+const int UI_VIDEO_VIEW   = 11000;
+const int UI_SETTING_VIEW = 12000;
+
+int uiState = UI_VIDEO_VIEW;
+boolean needToInvalidate = true;
+
+unsigned long lastTouchCheckTime = 0;
+uint16_t touchX = -1, touchY = -1;
 
 void setup() {
   Serial.begin(115200);
@@ -77,8 +90,8 @@ void setupTft() {
 
   videoSprite.setColorDepth(8);
   videoSprite.createSprite(
-    leptonWidth * videoScale,
-    leptonHeight * videoScale
+    leptonHeight * videoScale,
+    leptonWidth * videoScale
   );
   videoSprite.fillSprite(TFT_BLUE);
 }
@@ -86,18 +99,39 @@ void setupTft() {
 void loop() {
   startTime = millis();
 
-  if (!lepton.readFrame(frameData)) {
+  if (uiState == UI_VIDEO_VIEW && !lepton.readFrame(frameData)) {
     Serial.println("skip");
     return;
   }
 
+  static uint16_t color;
+
+  // in video view, check touch once per second. it costs lot.
+  if (uiState != UI_VIDEO_VIEW || millis() - lastTouchCheckTime >= 3000) {
+    Serial.println("check touch ==========================");
+    if (!tft.getTouch(&touchX, &touchY)) {
+      touchX = -1;
+      touchY = -1;
+      
+    } else {
+      
+      Serial.println("detacted touch ==========================");
+      Serial.println(touchX);
+      Serial.println(touchY);
+    }
+    lastTouchCheckTime = millis();
+  }
   invalidateVideo();
   render();
+
+  handleTouch();
 
   measureFrame();
 }
 
 void invalidateVideo() {
+  if (uiState != UI_VIDEO_VIEW) return;
+  
   uint16_t avg = 0;
   uint16_t minValue = 65535;
   uint16_t maxValue = 0;
@@ -107,8 +141,7 @@ void invalidateVideo() {
       uint16_t pixelData = frameData[i * leptonHeight + j];
       avg += (double(pixelData) / (leptonWidth * leptonHeight));
       
-      // TODO : auto min/max
-      if (pixelData > 25000 && pixelData < 34800) {
+      if (pixelData !=0) {
         if (minValue > pixelData) {
           minValue = pixelData;
         }
@@ -139,8 +172,8 @@ void invalidateVideo() {
   
   unsigned long sum2 = 0;
 
-  for (int i = 0; i < leptonWidth; i++){
-    for (int j = 0; j < leptonHeight; j++){
+  for (int i = 0; i < leptonWidth; i++) {
+    for (int j = 0; j < leptonHeight; j++) {
         uint16_t pixelData = ((frameData[i * leptonHeight + j] ) - minValue) * scale;
 
       if (pixelData < 0) {
@@ -164,11 +197,21 @@ void invalidateVideo() {
     Serial.print("avg2 : " );
     Serial.println(sum2 / (leptonWidth * leptonHeight));
   }
+  needToInvalidate = true;
 }
 
 void render() {
-  renderThermalVideo();
+  if (needToInvalidate) {
+    if (uiState == UI_VIDEO_VIEW) {
+      renderThermalVideo();
+    } else {
+      renderSettingUi();
+    }
+  }
+  
   renderSystemUi();
+  
+  needToInvalidate = false;
 }
 
 void renderThermalVideo() {
@@ -178,8 +221,8 @@ void renderThermalVideo() {
       for(int k = 0; k < videoScale; k++){
         for(int l = 0; l < videoScale; l++){
           videoSprite.drawPixel(
-            i * videoScale + k, 
             j * videoScale + l, 
+            i * videoScale + k, 
             renderData[i * leptonHeight + j]
           );
         }
@@ -189,14 +232,36 @@ void renderThermalVideo() {
   videoSprite.pushSprite(70, 0);
 }
 
+void renderSettingUi() {
+  tft.fillScreen(TFT_BLUE);
+
+  tft.drawString("settings", 100, 100);
+  
+}
+
 void renderSystemUi() {
   if (isDebug) {
     Serial.print("fps : ");
     Serial.println(framesPerSecond);
   }
   
-  tft.drawString("fps : " + String(framesPerSecond), 0, 0);
-  tft.drawString("frame : " + String(lastRenderTime) + "ms", 50, 0);
+  tft.drawString("fps : " + String(framesPerSecond) + "frame : " + String(lastRenderTime) + "ms", 200, 0);
+}
+
+void handleTouch() {
+  Serial.println(touchX);
+  if (touchX == -1 || touchX == 65535 || touchY == -1 || touchY == 65535) return;
+
+  if (uiState == UI_VIDEO_VIEW) {
+    uiState = UI_SETTING_VIEW;
+  } else {
+    uiState = UI_VIDEO_VIEW;
+  }
+
+  // after change ui, prevent touch in 1s.
+  lastTouchCheckTime = millis() + 1000;
+
+  needToInvalidate = true;
 }
 
 void measureFrame() {
