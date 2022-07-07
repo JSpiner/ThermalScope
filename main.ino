@@ -325,35 +325,35 @@ void handleTouch() {
 
 void handleTouchInSettingUi() {
   // back button
-  if (touchIn(250, 210, 320, 240)) {
+  if (touchIn(250, 200, 320, 240)) {
     uiState = UI_VIDEO_VIEW;
   }
   // color - rainbow
-  else if (touchIn(0, 30, 100, 50)) {
+  else if (touchIn(0, 30, 120, 50)) {
     colorMode = 0;
   }
   // color - grayscale
-  else if (touchIn(0, 50, 100, 70)) {
+  else if (touchIn(0, 50, 120, 70)) {
     colorMode = 1;
   }
   // color - ironblack
-  else if (touchIn(0, 70, 100, 90)) {
+  else if (touchIn(0, 70, 120, 90)) {
     colorMode = 2;
   }
   // tempMode - enable
-  else if (touchIn(0, 100, 100, 120)) {
+  else if (touchIn(0, 100, 120, 120)) {
     autoTemp = true;
   }
   // tempMode = disable
-  else if (touchIn(0, 120, 100, 140)) {
+  else if (touchIn(0, 120, 120, 140)) {
     autoTemp = false;
   }
   // scaleMode = nni
-  else if (touchIn(0, 150, 100, 170)) {
+  else if (touchIn(0, 150, 120, 170)) {
     scaleMode = SCALE_MODE_NNI;
   }
   // scaleMode = bli
-  else if (touchIn(0, 170, 100, 190)) {
+  else if (touchIn(0, 170, 120, 190)) {
     scaleMode = SCALE_MODE_BLI;
   }
 }
