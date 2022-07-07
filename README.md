@@ -8,12 +8,14 @@ ESP32 + Lepton based Toy Thermal Scope Project
  ```
 /* Lepton Pinmap
  * Lepton         ESP32
- * SDA        ->  21
- * SCL        ->  22
- * CS         ->  5
- * CLK(SCK)   ->  18
- * MISO       ->  19
- * MOSI       ->  23
+ * GND(1)     ->  GND
+ * Power(2)   ->  VCC
+ * SDA(5)     ->  21
+ * SCL(8)     ->  22
+ * CS(10)     ->  5
+ * CLK(SCK)(7)->  18
+ * MISO(12)   ->  19
+ * MOSI(9)    ->  23
  */
 
 /* ILI9341 320x240 tft LCD Pinmap (HSPI)
