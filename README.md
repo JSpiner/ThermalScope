@@ -33,6 +33,8 @@ ESP32 + Lepton based Toy Thermal Scope Project
  * T_DO       ->  MISO
 ```
 
+![Pinmap](./images/pinmap.jpeg)
+
 # Legal Compliance in Korea
 이 프로젝트는 레저용 장난감(에어소프건) 용도로 개발되었습니다.
 
