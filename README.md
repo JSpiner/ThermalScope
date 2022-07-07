@@ -5,7 +5,31 @@ ESP32 + Lepton based Toy Thermal Scope Project
 ![Sample1](./images/sample_2.jpeg)
 
 # Pinmap
-// TBD
+ 
+/* Lepton Pinmap
+ * Lepton         ESP32
+ * SDA        ->  21
+ * SCL        ->  22
+ * CS         ->  5
+ * CLK(SCK)   ->  18
+ * MISO       ->  19
+ * MOSI       ->  23
+ */
+
+/* ILI9341 320x240 tft LCD Pinmap (HSPI)
+ * LCD            ESP32
+ * CS         ->  15
+ * RESET      ->  4
+ * DC         ->  2
+ * SDI(MOSI)  ->  13
+ * CLK(SCK)   ->  14
+ * LED        ->  VCC
+ * SDOK(MISO) ->  12
+ * T_CLK      ->  SCK
+ * T_CS       ->  34
+ * T_DIN      ->  MOSI
+ * T_DO       ->  MISO
+
 
 # Legal Compliance in Korea
 이 프로젝트는 레저용 장난감(에어소프건) 용도로 개발되었습니다.
