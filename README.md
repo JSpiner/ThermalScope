@@ -43,3 +43,12 @@ ESP32 + Lepton based Toy Thermal Scope Project
 한국에서 본 프로젝트의 영점조절 기능을 구현 할 경우 조준경(총포 부품) 해석될 수 있음을 알립니다.
 
 [총포ㆍ도검ㆍ화약류 등의 안전관리에 관한 법률 시행령](https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%B4%9D%ED%8F%AC%E3%86%8D%EB%8F%84%EA%B2%80%E3%86%8D%ED%99%94%EC%95%BD%EB%A5%98%EB%93%B1%EC%9D%98%EC%95%88%EC%A0%84%EA%B4%80%EB%A6%AC%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0%EC%8B%9C%ED%96%89%EB%A0%B9)
+
+# OSS Notice
+- [GroupGets/LeptonModule](https://github.com/groupgets/LeptonModule) <br/>
+Copyright (c) 2014, Pure Engineering LLC <br/>
+BSD 2-Clause
+
+- [matt-williams/arduino-lepton](https://github.com/matt-williams/arduino-lepton) <br/>
+Copyright (c) 2016, Matt Williams
+BSD License
