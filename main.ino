@@ -66,9 +66,12 @@ const int SCALE_MODE_NNI = 1001; // Nearest Neighbor Interpolation
 const int SCALE_MODE_BLI = 1002; // Biliniear Interpolation
 int scaleMode = SCALE_MODE_BLI;
 
-const int AUTO_TEMP_MIN = 300 * 100; // 26'C == 300K
-const int AUTO_TEMP_MAX = 310 * 100; // 37'C == 310K
-boolean autoTemp = false;
+const int AUTO_TEMP_MODE_MINMAX = 1;
+const int AUTO_TEMP_MODE_FLAT_MINMAX = 2;
+int autoTempMode = AUTO_TEMP_MODE_MINMAX;
+
+int autoTempFlatMin = 65535;
+int autoTempFlatMax = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -139,25 +142,28 @@ void invalidateVideo() {
   uint16_t minValue = 65535;
   uint16_t maxValue = 0;
 
-  if (autoTemp) {
-    for (int i = 0; i < leptonWidth; i++){
-      for(int j = 0; j < leptonHeight; j++){
-        uint16_t pixelData = frameData[i * leptonHeight + j];
-        avg += (double(pixelData) / (leptonWidth * leptonHeight));
-        
-        if (pixelData !=0) {
-          if (minValue > pixelData) {
-            minValue = pixelData;
-          }
-          if (maxValue < pixelData) {
-            maxValue = pixelData;
-          }
+  for (int i = 0; i < leptonWidth; i++){
+    for(int j = 0; j < leptonHeight; j++){
+      uint16_t pixelData = frameData[i * leptonHeight + j];
+      avg += (double(pixelData) / (leptonWidth * leptonHeight));
+      
+      if (pixelData !=0) {
+        if (minValue > pixelData) {
+          minValue = pixelData;
+        }
+        if (maxValue < pixelData) {
+          maxValue = pixelData;
         }
       }
     }
-  } else {
-    minValue = AUTO_TEMP_MIN;
-    maxValue = AUTO_TEMP_MAX;
+  }
+    
+  if (autoTempMode == AUTO_TEMP_MODE_FLAT_MINMAX) {
+    if (minValue > autoTempFlatMin) minValue = autoTempFlatMin;
+    if (maxValue < autoTempFlatMax) maxValue = autoTempFlatMax;
+
+    autoTempFlatMin = minValue;
+    autoTempFlatMax = maxValue;
   }
 
   double scale = 0;
@@ -288,8 +294,8 @@ void renderSettingUi() {
   tft.drawString("grayscale (" + String((colorMode == 1) ? "o" : " ") + ")", 0, 50);
   tft.drawString("ironblack (" + String((colorMode == 2) ? "o" : " ") + ")", 0, 70);
 
-  tft.drawString("auto temp (" + String((autoTemp == true) ? "o" : " ") + ")", 0, 100);
-  tft.drawString("manual temp (" + String((autoTemp == false) ? "o" : " ") + ")", 0, 120);
+  tft.drawString("auto temp (" + String((autoTempMode == AUTO_TEMP_MODE_MINMAX) ? "o" : " ") + ")", 0, 100);
+  tft.drawString("flat temp (" + String((autoTempMode == AUTO_TEMP_MODE_FLAT_MINMAX) ? "o" : " ") + ")", 0, 120);
   
   tft.drawString("scale_nni (" + String((scaleMode == SCALE_MODE_NNI) ? "o" : " ") + ")", 0, 150);
   tft.drawString("scale_bli (" + String((scaleMode == SCALE_MODE_BLI) ? "o" : " ") + ")", 0, 170);
@@ -340,13 +346,16 @@ void handleTouchInSettingUi() {
   else if (touchIn(0, 70, 120, 90)) {
     colorMode = 2;
   }
-  // tempMode - enable
+  // tempMode - minmax
   else if (touchIn(0, 100, 120, 120)) {
-    autoTemp = true;
+    autoTempMode = AUTO_TEMP_MODE_MINMAX;
   }
-  // tempMode = disable
+  // tempMode = flat
   else if (touchIn(0, 120, 120, 140)) {
-    autoTemp = false;
+    autoTempMode = AUTO_TEMP_MODE_FLAT_MINMAX;
+    
+    autoTempFlatMin = 65535;
+    autoTempFlatMax = 0;
   }
   // scaleMode = nni
   else if (touchIn(0, 150, 120, 170)) {
